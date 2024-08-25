@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Roll Number</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fffbfb;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            border: none;
+            font-family: monospace;
+            font-size: 14px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            border: none;
+            background-color: #007BFF;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        select {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 14px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .response-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .response-container strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #fffbfb;
+        }
+
+        #errorMessage {
+            color: #ff6b6b;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>JSON Input</h1>
+        <textarea id="jsonInput" placeholder='Enter JSON here'></textarea>
+        <button onclick="submitData()">Submit</button>
+        <p id="errorMessage"></p>
+
+        <div id="dropdownContainer" style="display: none;">
+            <h2>Select Data to Display:</h2>
+            <select id="selectOptions" multiple>
+                <option value="Alphabets">Alphabets</option>
+                <option value="Numbers">Numbers</option>
+                <option value="Highest lowercase alphabet">Highest lowercase alphabet</option>
+            </select>
+        </div>
+
+        <div id="responseContainer" class="response-container"></div>
+    </div>
+
+    <script>
+        document.title = "YOUR_ROLL_NUMBER"; // Replace with your actual roll number
+
+        function submitData() {
+            const jsonInput = document.getElementById('jsonInput').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const responseContainer = document.getElementById('responseContainer');
+            const dropdownContainer = document.getElementById('dropdownContainer');
+
+            errorMessage.textContent = '';
+            responseContainer.innerHTML = '';
+
+            let jsonData;
+            try {
+                jsonData = JSON.parse(jsonInput);
+            } catch (error) {
+                errorMessage.textContent = 'Invalid JSON format';
+                return;
+            }
+
+            fetch('http://localhost:5000/bfhl', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                dropdownContainer.style.display = 'block';
+
+                document.getElementById('selectOptions').addEventListener('change', function() {
+                    const selectedOptions = Array.from(this.selectedOptions).map(option => option.value);
+                    renderResponse(data, selectedOptions);
+                });
+            })
+            .catch(error => {
+                errorMessage.textContent = 'Error fetching data';
+            });
+        }
+
+        function renderResponse(data, selectedOptions) {
+            const responseContainer = document.getElementById('responseContainer');
+            responseContainer.innerHTML = '';
+
+            if (selectedOptions.includes('Alphabets')) {
+                responseContainer.innerHTML += `<strong>Alphabets:</strong> ${JSON.stringify(data.alphabets)}`;
+            }
+            if (selectedOptions.includes('Numbers')) {
+                responseContainer.innerHTML += `<strong>Numbers:</strong> ${JSON.stringify(data.numbers)}`;
+            }
+            if (selectedOptions.includes('Highest lowercase alphabet')) {
+                responseContainer.innerHTML += `<strong>Highest Lowercase Alphabet:</strong> ${JSON.stringify(data.highest_lowercase_alphabet)}`;
+            }
+        }
+    </script>
+</body>
+
+</html>
